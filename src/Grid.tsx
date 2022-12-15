@@ -8,9 +8,18 @@ const defaultColDef = {
   sortable: true
 }
 
+const dateFormatter = ({ value }: { value: string }) => {
+  return new Intl.DateTimeFormat('en-US').format(new Date(value))
+}
+
 const columnDefs: ColDef[] = [
   { field: 'designation', headerName: 'Designation', filter: 'agTextColumnFilter' },
-  { field: 'discovery_date', headerName: 'Discovery Date', filter: 'agDateColumnFilter' },
+  {
+    field: 'discovery_date',
+    headerName: 'Discovery Date',
+    filter: 'agDateColumnFilter',
+    valueFormatter: dateFormatter
+  },
   { field: 'h_mag', headerName: 'H (mag)', filter: 'agNumberColumnFilter' },
   { field: 'moid_au', headerName: 'MOID (au)', filter: 'agNumberColumnFilter' },
   { field: 'q_au_1', headerName: 'q (au)', filter: 'agNumberColumnFilter' },
