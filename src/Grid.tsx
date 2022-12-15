@@ -9,7 +9,20 @@ const defaultColDef = {
 }
 
 const dateFormatter = ({ value }: { value: string }) => {
-  return new Intl.DateTimeFormat('en-US').format(new Date(value))
+  return new Intl.DateTimeFormat('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value))
+}
+
+const dateComparator = (dateFromFilter: Date, cellValue: string) => {
+  if (!cellValue) return 0
+  const cellDate = new Date(cellValue).getTime()
+
+  return cellDate < dateFromFilter.getTime() ? -1 : 1
+}
+
+const hazardousFormatter = ({ value }: { value: string }) => {
+  if (value === 'Y') return 'Yes'
+  if (value === 'N') return 'No'
+  return ''
 }
 
 const columnDefs: ColDef[] = [
@@ -18,7 +31,10 @@ const columnDefs: ColDef[] = [
     field: 'discovery_date',
     headerName: 'Discovery Date',
     filter: 'agDateColumnFilter',
-    valueFormatter: dateFormatter
+    valueFormatter: dateFormatter,
+    filterParams: {
+      comparator: dateComparator
+    }
   },
   { field: 'h_mag', headerName: 'H (mag)', filter: 'agNumberColumnFilter' },
   { field: 'moid_au', headerName: 'MOID (au)', filter: 'agNumberColumnFilter' },
@@ -26,7 +42,12 @@ const columnDefs: ColDef[] = [
   { field: 'q_au_2', headerName: 'Q (au)', filter: 'agNumberColumnFilter' },
   { field: 'period_yr', headerName: 'Period (yr)', filter: 'agNumberColumnFilter' },
   { field: 'i_deg', headerName: 'Inclination (deg)', filter: 'agNumberColumnFilter' },
-  { field: 'pha', headerName: 'Potentially Hazardous', filter: 'agTextColumnFilter' },
+  {
+    field: 'pha',
+    headerName: 'Potentially Hazardous',
+    filter: 'agTextColumnFilter',
+    valueFormatter: hazardousFormatter
+  },
   { field: 'orbit_class', headerName: 'Orbit Class', enableRowGroup: true, filter: 'agTextColumnFilter' }
 ]
 
