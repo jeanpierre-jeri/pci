@@ -1,28 +1,14 @@
 import { AgGridReact } from 'ag-grid-react'
-import { ColDef } from 'ag-grid-community'
+import { ColDef, GridApi } from 'ag-grid-community'
 import data from './near-earth-asteroids.json'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
+import { useEffect, useState } from 'react'
+import { dateComparator, dateFormatter, handleCopy, hazardousFormatter } from './lib/utils'
 
 const defaultColDef = {
-  sortable: true
-}
-
-const dateFormatter = ({ value }: { value: string }) => {
-  return new Intl.DateTimeFormat('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value))
-}
-
-const dateComparator = (dateFromFilter: Date, cellValue: string) => {
-  if (!cellValue) return 0
-  const cellDate = new Date(cellValue).getTime()
-
-  return cellDate < dateFromFilter.getTime() ? -1 : 1
-}
-
-const hazardousFormatter = ({ value }: { value: string }) => {
-  if (value === 'Y') return 'Yes'
-  if (value === 'N') return 'No'
-  return ''
+  sortable: true,
+  flex: 1
 }
 
 const columnDefs: ColDef[] = [
@@ -48,14 +34,35 @@ const columnDefs: ColDef[] = [
     filter: 'agTextColumnFilter',
     valueFormatter: hazardousFormatter
   },
-  { field: 'orbit_class', headerName: 'Orbit Class', enableRowGroup: true, filter: 'agTextColumnFilter' }
+  { field: 'orbit_class', headerName: 'Orbit Class', filter: 'agTextColumnFilter' }
 ]
 
 const NeoGrid = (): JSX.Element => {
+  const [gridApi, setGridApi] = useState<GridApi>()
+
+  useEffect(() => {
+    const copy = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'c') {
+        handleCopy(gridApi)
+      }
+    }
+    document.addEventListener('keydown', copy)
+    return () => document.removeEventListener('keydown', copy)
+  })
   return (
-    <div className="ag-theme-alpine" style={{ height: 900, width: 1920 }}>
-      <AgGridReact defaultColDef={defaultColDef} rowData={data} columnDefs={columnDefs} rowGroupPanelShow={'always'} />
-    </div>
+    <>
+      <div className="ag-theme-alpine" style={{ height: 900, width: 1920 }}>
+        <AgGridReact
+          rowSelection="multiple"
+          defaultColDef={defaultColDef}
+          rowData={data}
+          columnDefs={columnDefs}
+          rowGroupPanelShow={'always'}
+          copyHeadersToClipboard={true}
+          onGridReady={(params) => setGridApi(params.api)}
+        />
+      </div>
+    </>
   )
 }
 
